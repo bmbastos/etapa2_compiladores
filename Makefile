@@ -1,6 +1,6 @@
 # Integrantes do grupo V:
 # Bruno Marques Bastos (314518)
-# Gustavo Lopes Noll (cartão)
+# Gustavo Lopes Noll (322864)
 
 # Makefile para compilar o analisador léxico
 
@@ -21,12 +21,20 @@ OBJECTS = lex.yy.c main.o functions.o
 
 # Alvo padrão
 all: $(EXECUTABLE)
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(OBJECTS)
 
-parser.tab.h: parser.y
+parser.tab.c: parser.y
 	bison -d parser.y
+
+lex.yy.c: scanner.l
+	flex scanner.l
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c
 
+functions.o: functions.c
+	$(CC) $(CFLAGS) -c functions.c
+
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE) parser.tab.h
+	rm -f $(OBJECTS) $(EXECUTABLE) parser.tab.*
