@@ -21,7 +21,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 # Regra para construir o analisador sintático
 parser.tab.c: parser.y
-	bison -d $<
+	bison -v -d $<
 
 # Regra para construir o analisador léxico
 lex.yy.c: scanner.l
@@ -40,4 +40,4 @@ run: $(EXECUTABLE)
 
 # Alvo para limpar arquivos gerados
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE) parser.tab.*
+	rm -f $(OBJECTS) $(EXECUTABLE) parser.tab.* parser.output
