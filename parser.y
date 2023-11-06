@@ -4,12 +4,13 @@
     - Bruno Marques Bastos (314518)
     - Gustavo Lopes Noll (cartão)
     */
-    
+    #include <stdio.h>
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
-
-%define parse.error verbose
+%{
+#include <stdio.h>
+%}
 
 %token TK_PR_INT
 %token TK_PR_FLOAT
@@ -31,68 +32,132 @@
 %token TK_LIT_TRUE
 %token TK_ERRO
 
-%start programa
 
 %%
-tipo:                       TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL;                                   /* Regras para variaveis globais */
-id:                         TK_IDENTIFICADOR;
-lista_variaveis_globais:     | ',' id lista_variaveis_globais;
-variavel_global:            tipo id lista_variaveis_globais ';';
 
-lista_parametros:           ',' tipo id lista_parametros                                            /* Regras para cabeçalhos funções */
-                            |
-cabecalho_funcao:           '(' lista_parametros ')' TK_OC_GE tipo '!'
-                            | '(' tipo id lista_parametros ')' TK_OC_GE tipo '!';
+programa: elementos
+        ;
+
+elementos: elementos elemento
+         | elemento
+         ;
+
+elemento: declaracoes_globais
+        | definicao_funcao
+        ;
+
+declaracoes_globais: declaracao_variaveis_globais
+                 ;
+
+declaracao_variaveis_globais: tipo lista_identificadores ';'
+                        ;
+
+tipo: TK_PR_INT
+    | TK_PR_FLOAT
+    | TK_PR_BOOL
+    ;
+
+lista_identificadores: TK_IDENTIFICADOR
+                   | lista_identificadores ',' TK_IDENTIFICADOR
+                   ;
+
+definicao_funcao: cabecalho_funcao corpo_funcao
+               ;
+
+cabecalho_funcao: parametros TK_OC_GE tipo '!' TK_IDENTIFICADOR
+               | tipo '!' TK_IDENTIFICADOR TK_OC_GE tipo '!' TK_IDENTIFICADOR
+               ;
+
+parametros: '(' lista_parametros ')'
+          ;
+
+lista_parametros: /* vazio */
+               | parametro
+               | lista_parametros ',' parametro
+               ;
+
+parametro: tipo TK_IDENTIFICADOR
+         ;
+
+corpo_funcao: '{' comandos '}'
+            ;
+
+comandos: comando
+        | comandos comando
+        ;
+
+comando: /* vazio */ 
+       | declaracao_variavel_local
+       | atribuicao
+       | condicao
+       | repeticao
+       | retorno
+       | bloco_comandos
+       | chamada_funcao_init
+       ;
 
 
+declaracao_variavel_local: tipo lista_identificadores ';'
+                       ;
 
+atribuicao: TK_IDENTIFICADOR '=' expressao ';'
+         ;
 
-                                                                                                    /* FOCAR NESSA PARTE */
-termo:                      fator
-                            | termo '*' fator
-                            | termo '/' fator
-                            | termo '%' fator
-fator:                      id | '(' expressao ')';
-literais:                   TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_TRUE | TK_LIT_FALSE;
-operandos:                  id
-                            | literais
-                            | chamada_funcao
-operador_unario:            '-' | '!';
-operador_binario:           '*' | '/' | '%' | '+' | '-' | '<' | '>' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE | TK_OC_AND | TK_OC_OR; 
-expressao:                  termo
-                            | operador_unario termo
+condicao: TK_PR_IF '(' expressao ')' comando
+        | TK_PR_IF '(' expressao ')' comando TK_PR_ELSE comando
+        ;
 
+repeticao: TK_PR_WHILE '(' expressao ')' comando
+         ;
 
+retorno: TK_PR_RETURN expressao ';'
+       ;
 
+bloco_comandos: '{' comandos '}'
+             ;
 
+chamada_funcao_init: TK_IDENTIFICADOR '(' argumentos ')' ';'
+chamada_funcao: TK_IDENTIFICADOR '(' argumentos ')' 
+             ;
 
+argumentos: 
+          | expressao
+          | argumentos ',' expressao
+          ;
 
-fluxo_condicional:          TK_PR_IF '(' expressao ')' corpo_funcao                                 /* Regras de controle de fluxo */
-                            | TK_PR_IF '(' expressao ')' corpo_funcao TK_PR_ELSE corpo_funcao
-fluxo_iterativo:            TK_PR_WHILE '(' expressao ')' '{' bloco_comandos '}'
-controle_fluxo:             fluxo_condicional | fluxo_iterativo;
-retorno:                    TK_PR_RETURN expressao                                                  /* Regra retorno */
-lista_argumentos:           id lista_argumentos                                                     /* Regra chamada de função */
-                            | expressao lista_argumentos
-                            | 
-argumentos:                 id lista_argumentos 
-                            | expressao lista_argumentos
-chamada_funcao:             id '(' argumentos ')'
-atribuicao:                 id '=' expressao                                                        /* Regra atribuição */
-lista_variaveis_locais:      | ',' id lista_variaveis_locais                                        /* Regra declaração de variaveis */
-variavel_local:             tipo id lista_variaveis_locais
+expressao: expressao '<' expressao
+         | expressao '>' expressao
+         | expressao TK_OC_LE expressao
+         | expressao TK_OC_GE expressao
+         | expressao TK_OC_EQ expressao
+         | expressao TK_OC_NE expressao
+         | expressao TK_OC_AND expressao
+         | expressao TK_OC_OR expressao
+         | expressao '+' termo
+         | expressao '-' termo
+         | termo
+         ;
 
-bloco_comandos:             comando_simples ';' bloco_comandos                                      /* Regra de bloco de comandos */
-                            | 
-comando_simples:            variavel_local                                                          /* Regra dos comandos simples */
-                            | atribuicao
-                            | chamada_funcao
-                            | retorno
-                            | controle_fluxo
-corpo_funcao:               '{' comando_simples '}'                                                 /* Regra corpo da função */
-funcoes:                    cabecalho_funcao corpo_funcao;                                          /* Regra de definição de função */
+termo: termo '*' fator
+     | termo '/' fator
+     | termo '%' fator
+     | fator
+     ;
 
-programa:                   | variavel_global programa | funcoes programa;                          /* ARRUMAR para aceitar qualquer ordem */
+fator: '-' fator %prec '-'
+     | '!' fator %prec '!'
+     | primario
+     ;
 
+primario: '(' expressao ')'
+        | TK_IDENTIFICADOR
+        | literais
+        | chamada_funcao
+        ;
+
+literais: TK_LIT_INT
+        | TK_LIT_FLOAT
+        | TK_LIT_TRUE
+        | TK_LIT_FALSE
 
 %%
