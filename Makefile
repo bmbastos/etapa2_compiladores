@@ -1,7 +1,3 @@
-# Integrantes do grupo V:
-# Bruno Marques Bastos (314518)
-# Gustavo Lopes Noll (322864)
-
 # Makefile para compilar o analisador léxico
 
 # Compilador a ser usado
@@ -17,24 +13,31 @@ EXECUTABLE = etapa2
 SOURCES = parser.y main.c
 
 # Objetos gerados
-OBJECTS = lex.yy.c main.o functions.o
+OBJECTS = parser.tab.c lex.yy.c main.o functions.o
+
+# Dependências para construção do executável
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Regra para construir o analisador sintático
+parser.tab.c: parser.y
+	bison -d $<
+
+# Regra para construir o analisador léxico
+lex.yy.c: scanner.l
+	flex $<
+
+# Regra genérica para compilar arquivos .c
+%.o: %.c functions.h
+	$(CC) $(CFLAGS) -c $<
 
 # Alvo padrão
 all: $(EXECUTABLE)
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(OBJECTS)
 
-parser.tab.c: parser.y
-	bison -d parser.y
+# Alvo para execução do programa
+run: $(EXECUTABLE)
+	./$(EXECUTABLE)
 
-lex.yy.c: scanner.l
-	flex scanner.l
-
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
-
-functions.o: functions.c
-	$(CC) $(CFLAGS) -c functions.c
-
+# Alvo para limpar arquivos gerados
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE) parser.tab.*
