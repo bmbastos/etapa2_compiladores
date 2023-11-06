@@ -34,13 +34,19 @@
 %start programa
 
 %%
-tipo: TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL;                                                                             /* Regras para variaveis globais */
-id: TK_IDENTIFICADOR;
-lista_variaveis_globais: ',' id lista_variaveis_globais | ';';
-variavel_global: tipo id lista_variaveis_globais;
+tipo:                       TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL;                                 /* Regras para variaveis globais */
+id:                         TK_IDENTIFICADOR;
+lista_variaveis_globais:     | ',' id lista_variaveis_globais;
+variavel_global:            tipo id lista_variaveis_globais ';';
 
+lista_parametros:            | ',' tipo id lista_parametros;
+cabecalho_funcao:           '(' lista_parametros ')' TK_OC_GE tipo '!'
+                             | '(' tipo id lista_parametros ')' TK_OC_GE tipo '!';
+comando_simples:            
+corpo_funcao:               '{'  '}'
+funcoes:                    cabecalho_funcao corpo_funcao;
 
-programa: variavel_global;
+programa:                   | variavel_global | funcoes ;
 
 
 %%
