@@ -36,6 +36,7 @@
 %%
 
 programa: elementos
+        | /* Vazio */
         ;
 
 elementos: elementos elemento
@@ -59,6 +60,7 @@ tipo: TK_PR_INT
 
 lista_identificadores: TK_IDENTIFICADOR
                    | lista_identificadores ',' TK_IDENTIFICADOR
+                   | /* Vazio */
                    ;
 
 definicao_funcao: cabecalho_funcao corpo_funcao
@@ -71,29 +73,29 @@ cabecalho_funcao: parametros TK_OC_GE tipo '!' TK_IDENTIFICADOR
 parametros: '(' lista_parametros ')'
           ;
 
-lista_parametros: /* vazio */
-               | parametro
+lista_parametros: parametro
                | lista_parametros ',' parametro
+               | /* Vazio */
                ;
 
 parametro: tipo TK_IDENTIFICADOR
          ;
 
-corpo_funcao: '{' comandos '}'
+corpo_funcao: bloco_comandos
             ;
 
 comandos: comando
         | comandos comando
         ;
 
-comando: /* vazio */ 
-       | declaracao_variavel_local
+comando: declaracao_variavel_local
        | atribuicao
        | condicao
        | repeticao
        | retorno
        | bloco_comandos
        | chamada_funcao_init
+       | /* Vazio */
        ;
 
 
@@ -103,11 +105,11 @@ declaracao_variavel_local: tipo lista_identificadores ';'
 atribuicao: TK_IDENTIFICADOR '=' expressao ';'
          ;
 
-condicao: TK_PR_IF '(' expressao ')' comando
-        | TK_PR_IF '(' expressao ')' comando TK_PR_ELSE comando
+condicao: TK_PR_IF '(' expressao ')' bloco_comandos
+        | TK_PR_IF '(' expressao ')' bloco_comandos TK_PR_ELSE bloco_comandos
         ;
 
-repeticao: TK_PR_WHILE '(' expressao ')' comando
+repeticao: TK_PR_WHILE '(' expressao ')' bloco_comandos
          ;
 
 retorno: TK_PR_RETURN expressao ';'
@@ -125,14 +127,14 @@ argumentos:
           | argumentos ',' expressao
           ;
 
-expressao: expressao '<' expressao
-         | expressao '>' expressao
-         | expressao TK_OC_LE expressao
-         | expressao TK_OC_GE expressao
-         | expressao TK_OC_EQ expressao
-         | expressao TK_OC_NE expressao
-         | expressao TK_OC_AND expressao
-         | expressao TK_OC_OR expressao
+expressao: expressao '<' termo
+         | expressao '>' termo
+         | expressao TK_OC_LE termo
+         | expressao TK_OC_GE termo
+         | expressao TK_OC_EQ termo
+         | expressao TK_OC_NE termo
+         | expressao TK_OC_AND termo
+         | expressao TK_OC_OR termo
          | expressao '+' termo
          | expressao '-' termo
          | termo
