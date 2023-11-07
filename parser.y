@@ -95,7 +95,6 @@ comando: declaracao_variavel_local
        | retorno
        | bloco_comandos
        | chamada_funcao_init
-       | /* Vazio */
        ;
 
 
@@ -116,7 +115,8 @@ retorno: TK_PR_RETURN expressao ';'
        ;
 
 bloco_comandos: '{' comandos '}'
-             ;
+              | '{' '}'
+              ;
 
 chamada_funcao_init: TK_IDENTIFICADOR '(' argumentos ')' ';'
 chamada_funcao: TK_IDENTIFICADOR '(' argumentos ')' 
