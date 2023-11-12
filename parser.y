@@ -2,15 +2,13 @@
     /*
     Integrantes do grupo V:
     - Bruno Marques Bastos (314518)
-    - Gustavo Lopes Noll (cartão)
+    - Gustavo Lopes Noll (322864)
     */
     #include <stdio.h>
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
-%{
-#include <stdio.h>
-%}
+%define parse.error verbose
 
 %token TK_PR_INT
 %token TK_PR_FLOAT
