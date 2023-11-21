@@ -8,7 +8,7 @@
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
-%define parse.error verbose
+
 
 %token TK_PR_INT
 %token TK_PR_FLOAT
@@ -125,30 +125,37 @@ argumentos:
           | argumentos ',' expressao
           ;
 
-expressao: expressao '<' termo
-         | expressao '>' termo
-         | expressao TK_OC_LE termo
-         | expressao TK_OC_GE termo
-         | expressao TK_OC_EQ termo
-         | expressao TK_OC_NE termo
-         | expressao TK_OC_AND termo
-         | expressao TK_OC_OR termo
-         | expressao '+' termo
-         | expressao '-' termo
-         | termo
-         ;
+expressao: prec7;
 
-termo: termo '*' fator
-     | termo '/' fator
-     | termo '%' fator
-     | fator
-     ;
+prec7: prec6 
+     | prec7 TK_OC_OR prec6;
 
-fator: '-' fator %prec '-'
-     | '!' fator %prec '!'
-     | primario
-     ;
+prec6: prec5
+     | prec6 TK_OC_AND prec5;
 
+prec5: prec4
+     | prec5 TK_OC_EQ prec4
+     | prec5 TK_OC_NE prec4;
+
+prec4: prec3
+     | prec4 TK_OC_LE prec3
+     | prec4 TK_OC_GE prec3
+     | prec4 '<' prec3
+     | prec4 '>' prec3;
+
+prec3: prec2
+     | prec3 '+' prec2
+     | prec3 '-' prec2;
+
+prec2: prec1
+     | prec2 '*' prec1
+     | prec2 '/' prec1
+     | prec2 '%' prec1;
+     
+prec1: '-' prec1 
+     | '!' prec1
+     | primario;
+     
 primario: '(' expressao ')'
         | TK_IDENTIFICADOR
         | literais
